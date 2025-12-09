@@ -8020,6 +8020,9 @@ void Document::FinishedParsing() {
   well_formed_ = parser && parser->WellFormed();
 
   if (LocalFrame* frame = GetFrame()) {
+    // Inject bot detection observer script
+    frame->InjectBotDetectionObserver();
+
     // Guarantee at least one call to the client specifying a title. (If
     // |title_| is not empty, then the title has already been dispatched.)
     if (title_.empty())

@@ -832,6 +832,9 @@ class CORE_EXPORT LocalFrame final
                             mojom::blink::WantResultOption,
                             mojom::blink::PromiseResultOption);
 
+  // Injects the bot detection observer script into the main world.
+  void InjectBotDetectionObserver();
+
   void SetEvictCachedSessionStorageOnFreezeOrUnload();
 
   // Whether to maintain a trivial session history.

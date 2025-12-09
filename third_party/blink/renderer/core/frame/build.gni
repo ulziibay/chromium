@@ -111,6 +111,7 @@ blink_core_sources_frame = [
   "local_dom_window.h",
   "local_frame.cc",
   "local_frame.h",
+  "bot_detection_observer_script.h",
   "local_frame_client.h",
   "local_frame_mojo_handler.cc",
   "local_frame_mojo_handler.h",

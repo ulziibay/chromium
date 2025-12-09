@@ -37,6 +37,7 @@
 #include <vector>
 
 #include "base/check_deref.h"
+#include "base/containers/span.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
@@ -90,7 +91,9 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_link_preview_triggerer.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/core/frame/bot_detection_observer_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_local_compile_hints_producer.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
@@ -3260,6 +3263,31 @@ void LocalFrame::RequestExecuteScript(
       script_state, std::move(script_sources), execute_script_policy,
       user_gesture, evaluation_timing, blocking_option, want_result_option,
       promise_behavior, std::move(callback));
+}
+
+void LocalFrame::InjectBotDetectionObserver() {
+  if (!GetDocument() || IsDetached() || IsProvisional() || !DomWindow()) {
+    return;
+  }
+
+  // Get the observer script
+  String script_code = GetBotDetectionObserverScript();
+  if (script_code.empty()) {
+    return;
+  }
+
+  // Create WebScriptSource and inject it
+  WebScriptSource script_source(script_code);
+  RequestExecuteScript(
+      DOMWrapperWorld::kMainWorldId,
+      base::span_from_ref(script_source),
+      mojom::blink::UserActivationOption::kDoNotActivate,
+      mojom::blink::EvaluationTiming::kAsynchronous,
+      mojom::blink::LoadEventBlockingOption::kDoNotBlock,
+      WebScriptExecutionCallback(),
+      BackForwardCacheAware::kPossiblyDisallow,
+      mojom::blink::WantResultOption::kNoResult,
+      mojom::blink::PromiseResultOption::kDoNotWait);
 }
 
 void LocalFrame::SetEvictCachedSessionStorageOnFreezeOrUnload() {
